@@ -6,11 +6,13 @@
   "scripts": {
     "lesson00": "npm run watch-server | npm run watch00",
     "lesson01": "npm run watch-server | npm run watch01",
+    "lesson02": "npm run watch-server | npm run watch02",
 
     "watch-server": "nodemon --ignore public/ server.js",
 
     "watch00": "watchify lessons/lesson00/main.js -do public/js/bundle.js -v",
-    "watch01": "watchify lessons/lesson01/main.js -do public/js/bundle.js -v"
+    "watch01": "watchify lessons/lesson01/main.js -do public/js/bundle.js -v",
+    "watch02": "watchify lessons/lesson02/main.js -do public/js/bundle.js -v"
   },
   "repository": {
     "type": "git",
