@@ -6,7 +6,7 @@
 var ShaderProgramLoader = require("./../utils/shaderprogramloader");
 
 //Varjundajate kataloog
-var SHADER_PATH = "shaders/lesson01/";
+var SHADER_PATH = "shaders/lesson03/";
 
 //Element, kuhu renderdame
 var canvas = document.getElementById("canvas");
@@ -16,6 +16,8 @@ GL = initWebGL(canvas);
 
 //Seadistame renderdamisresolutsiooni
 GL.viewport(0, 0, canvas.width, canvas.height);
+GL.viewportWidth = canvas.width;
+GL.viewportHeight = canvas.height;
 
 //Loome uue programmi spetsifitseeritud varjundajatega. Kuna laadimine on asünkroonne, siis anname kaasa ka
 //meetodi, mis kutsutakse välja kui varjundajad on laetud
@@ -44,29 +46,73 @@ function initWebGL(canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////// LESSON00 - VÄRV /////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////// LESSON03 - MAATRIKSID /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function render() {
 
-    //Tippude andmed, mis moodustavad ühe kolmnurga
+    //Mudelmaatriks, millega objektiruumist maailmaruumi saada
+    var modelMatrix = mat4.create();
+
+    //Punkt, kus objekt hetkel asub
+    var objectAt = [0.0, 0.0, -5.0];
+
+    //Kasutades translatsiooni, saame mudelmaatriksiga objekti liigutada
+    mat4.translate(modelMatrix, modelMatrix, objectAt);
+
+    //Kaameramaatriks, millega maailmaruumist kaameraruumi saada
+    var viewMatrix = mat4.create();
+
+    //Defineerime vektorid, mille abil on võimalik kaameraruumi baasvektorid arvutada
+    var cameraAt = [0, 0, 5];            //Asub maailmaruumis nendel koordinaatidel
+    var lookAt = [0, 0, -1];             //Mis suunas kaamera vaatab. Paremakäe koordinaatsüsteemis on -z ekraani sisse
+    var up = [0, 1, 0];                  //Vektor, mis näitab, kus on kaamera ülesse suunda näitav vektor
+
+    //Kalkuleerime antud koordinaatide järgi kaameramaatriksi
+    mat4.lookAt(viewMatrix, cameraAt, lookAt, up);
+
+    //Projektsioonimaatriks, et pügamisruumi saada. Kasutades glMatrix teeki genereerime ka püramiidi, kuhu sisse objektid lähevad.
+    var projectionMatrix = mat4.create();
+    mat4.perspective(projectionMatrix, 45.0, GL.viewportWidth / GL.viewportHeight, 1.0, 1000.0);
+
+
+
+
+    //Tippude andmed
     var myVerticesData = [
-        0.0,   1.0,  0.0,   // Tipp 1
-       -1.0,  -1.0,  0.0,   // Tipp 2
-        1.0,  -1.0,  0.0    // Tipp 3
+        -1.0, -1.0,  1.0,
+        1.0, -1.0,  1.0,
+        1.0,  1.0,  1.0,
+        -1.0,  1.0,  1.0
     ];
 
     //Loome puhvri, kuhu tipuandmed viia. Seome ka antud puhvri kontekstiga, et temale käske edasi anda
     var vertexBuffer = GL.createBuffer();
+
     GL.bindBuffer(GL.ARRAY_BUFFER, vertexBuffer);
 
     //Anname loodud puhvrile andmed
     GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(myVerticesData), GL.STATIC_DRAW);
 
+    //Tippude indeksid
+    var myIndicesData = [
+        0,  1,  2,
+        0,  2,  3
+    ];
+
+    //Loome puhvri, kuhu indeksid viia. Seome ka antud puhvri kontekstiga, et temale käske edasi anda
+    var indexBuffer = GL.createBuffer();
+    indexBuffer.numberOfIndexes = 6;
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+    //Anname loodud puhvrile andmed
+    GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, new Uint16Array(myIndicesData), GL.STATIC_DRAW);
+
     //Tippude värvid
     var myVerticesColor = [
         1.0,  0.0,  0.0,   // Tipp 1 punane
         0.0,  1.0,  0.0,   // Tipp 2 roheline
-        0.0,  0.0,  1.0    // Tipp 3 sinine
+        0.0,  0.0,  1.0,   // Tipp 3 sinine
+        1.0,  1.0,  0.0    //Tipp 4 kollane
     ];
 
     //Loome puhvri ja seome kontekstiga
@@ -86,12 +132,22 @@ function render() {
     //Saame värviatribuudi asukoha
     var a_Color = GL.getAttribLocation(shaderProgram, "a_Color");
 
+    //Saame ühtsete muutujate asukohad
+    var u_ModelMatrix = GL.getUniformLocation(shaderProgram, "u_ModelMatrix");
+    var u_ViewMatrix = GL.getUniformLocation(shaderProgram, "u_ViewMatrix");
+    var u_ProjectionMatrix = GL.getUniformLocation(shaderProgram, "u_ProjectionMatrix");
 
-    //Seome tipupuhvri ja määrame, kus antud tipuatribuut asub.
+    //Seekord enne renderdamist puhastame ka värvi- ja sügavuspuhvrid, ning määrame uue puhastuvärvuse.
+    //Hetkel puhastamine midagi ei tee, sest me renderdame vaid ühe korra, kuid kui me tsükklis seda tegema
+    //on näha ka, mida nad teevad.
+    GL.clearColor(0.0, 0.0, 0.0, 1.0);
+    GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+    //Seome tipupuhvri ja määrame, kus antud tipuatribuut asub antud massiivis.
     GL.bindBuffer(GL.ARRAY_BUFFER, vertexBuffer);
     GL.vertexAttribPointer(a_Position, 3, GL.FLOAT, false, 0, 0);
 
-    //Seome värvipuhvri ja määrame, kus antud atribuut asub.
+    //Seome värvipuhvri ja määrame, kus antud atribuut asub antud massiivis.
     GL.bindBuffer(GL.ARRAY_BUFFER, colorBuffer);
     GL.vertexAttribPointer(a_Color, 3, GL.FLOAT, false, 0, 0);
 
@@ -99,8 +155,14 @@ function render() {
     GL.enableVertexAttribArray(a_Position);
     GL.enableVertexAttribArray(a_Color);
 
-    //Renderdame Kolmnurgad
-    GL.drawArrays(GL.TRIANGLES, 0, 3);
+    //Saadame meie maatriksid ka varjundajasse
+    GL.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix);
+    GL.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix);
+    GL.uniformMatrix4fv(u_ProjectionMatrix, false, projectionMatrix);
+
+    //Renderdame kolmnurgad indeksite järgi
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    GL.drawElements(GL.TRIANGLES, indexBuffer.numberOfIndexes, GL.UNSIGNED_SHORT, 0);
 
 
 }
