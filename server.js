@@ -4,6 +4,7 @@ var express = require('express'),
 var browserify = require('browserify');
 
 server.use(express.static(__dirname + '/public'));
+server.use('/shaders', express.static(__dirname + '/lessons/shaders'));
 
 server.listen(9000);
 console.log('Listening on port 9000');

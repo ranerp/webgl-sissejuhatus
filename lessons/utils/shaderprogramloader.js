@@ -3,10 +3,13 @@
  *
  * @param {String} vertexShaderPath
  * @param {String} fragmentShaderPath
+ * @param {function} onLinked Meetod, mis kutsutakse välja, kui varjundajad on laetud
  * @class
  */
-var ProgramObject = function(vertexShaderPath, fragmentShaderPath) {
+var ProgramObject = function(vertexShaderPath, fragmentShaderPath, onLinked) {
     this.program = GL.createProgram();
+
+    this.onLinked = onLinked;
 
     this.vertexShader = {
         "shader": GL.createShader(GL.VERTEX_SHADER),
@@ -34,7 +37,6 @@ ProgramObject.prototype = {
      * @param {String} path Tee, mille abil tuvastada, kumma varjundaja lähtekood on laetud
      */
     oncomplete: function(src, path) {
-        console.log(this);
         if(path === this.vertexShader.path) {
             this.vertexShader.completed = true;
             this.vertexShader.src = src;
@@ -48,14 +50,17 @@ ProgramObject.prototype = {
             this.compileShader(this.vertexShader.shader, this.vertexShader.src);
             this.compileShader(this.fragmentShader.shader, this.fragmentShader.src);
 
-
             GL.attachShader(this.program, this.vertexShader.shader);
             GL.attachShader(this.program, this.fragmentShader.shader);
 
             GL.linkProgram(this.program);
+
             if(!GL.getProgramParameter(this.program, GL.LINK_STATUS)) {
-                throw Error("Could not initialize shaders");
+                throw Error("Error linking shader program: \"" + GL.getProgramInfoLog(this.program) + "\"");
             }
+
+            if(typeof this.onLinked != "undefined")
+                this.onLinked();
         }
     },
 
@@ -69,7 +74,7 @@ ProgramObject.prototype = {
         GL.shaderSource(shader, source);
         GL.compileShader(shader);
 
-        if (null == GL.getShaderParameter(shader, GL.COMPILE_STATUS)) {
+        if (!GL.getShaderParameter(shader, GL.COMPILE_STATUS)) {
             throw Error("Shader compilation failed. Error: \"" + GL.getShaderInfoLog(shader) + "\"");
         }
     }
@@ -82,17 +87,27 @@ ProgramObject.prototype = {
  * @class ShaderProgramLoader
  */
 var ShaderProgramLoader = function() {
-    this.programContainer = [];
+    this.container = [];
     this.counter = -1;
 };
 
 ShaderProgramLoader.prototype = {
     constructor: ShaderProgramLoader,
 
-    getProgram: function(vertexShaderPath, fragmentShaderPath) {
+    /**
+     * Tagastab programm objekti. Asünkroonselt tagaplaanil laetakse ja kompileeritakse varjundajad. Enne kui
+     * programmi kasutada tuleb kontrollida, et varjundajad on kompileeritud ja programmiga seotud. Võimalik on
+     * parameetriks anda ka Callback funktsioon, mis teada annab, kui varjundajad on seotud.
+     *
+     * @param {String} vertexShaderPath Tee, tipuvarjundaja juurde
+     * @param {String} fragmentShaderPath Tee, pikslivarjundaja juurde
+     * @param {function} linkedCallback Funktsioon, mis kutsutakse välja, kui varjundajad on kompileeritud ja seotud programmiga
+     * @returns {exports.defaultOptions.program|*|WebGLProgram|ProgramObject.program}
+     */
+    getProgram: function(vertexShaderPath, fragmentShaderPath, linkedCallback) {
         this.counter++;
-        this.programContainer[this.counter] = new ProgramObject(vertexShaderPath, fragmentShaderPath);
-        var program = this.programContainer[this.counter];
+        this.container[this.counter] = new ProgramObject(vertexShaderPath, fragmentShaderPath, linkedCallback);
+        var program = this.container[this.counter];
 
         this.loadAsyncShaderSource(vertexShaderPath, program.oncomplete.bind(program));
         this.loadAsyncShaderSource(fragmentShaderPath, program.oncomplete.bind(program));
@@ -100,6 +115,12 @@ ShaderProgramLoader.prototype = {
         return program.program;
     },
 
+    /**
+     * Laeb asünkroonselt
+     *
+     * @param {String} shaderPath Tee, kus asub varjundaja
+     * @param {function} callback Funktsioon, mis käivitatakse, kui lähtekood on kätte saadud. Saadetakse vastus ja tee.
+     */
     loadAsyncShaderSource: function(shaderPath, callback) {
         $.ajax({
             async: true,
