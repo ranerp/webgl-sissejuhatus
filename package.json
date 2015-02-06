@@ -6,7 +6,7 @@
   "scripts": {
     "lesson00": "npm run watch-server | npm run watch00",
     "watch-server": "nodemon --ignore public/ server.js",
-    "watch00": "watchify lessons/tund00/main.js -do public/js/bundle.js -v"
+    "watch00": "watchify lessons/lesson00/main.js -do public/js/bundle.js -v"
   },
   "repository": {
     "type": "git",
