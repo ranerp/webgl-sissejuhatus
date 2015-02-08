@@ -9,6 +9,7 @@
     "lesson02": "npm run watch-server | npm run watch02",
     "lesson03": "npm run watch-server | npm run watch03",
     "lesson04": "npm run watch-server | npm run watch04",
+    "lesson05": "npm run watch-server | npm run watch05",
 
     "watch-server": "nodemon --ignore public/ server.js",
 
@@ -16,7 +17,8 @@
     "watch01": "watchify lessons/lesson01/main.js -do public/js/bundle.js -v",
     "watch02": "watchify lessons/lesson02/main.js -do public/js/bundle.js -v",
     "watch03": "watchify lessons/lesson03/main.js -do public/js/bundle.js -v",
-    "watch04": "watchify lessons/lesson04/main.js -do public/js/bundle.js -v"
+    "watch04": "watchify lessons/lesson04/main.js -do public/js/bundle.js -v",
+    "watch05": "watchify lessons/lesson05/main.js -do public/js/bundle.js -v"
   },
   "repository": {
     "type": "git",

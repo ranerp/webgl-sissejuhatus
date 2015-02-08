@@ -7,7 +7,10 @@ var ShaderProgramLoader = require("./../utils/shaderprogramloader");
 var Looper = require("./../utils/looper");
 
 //Varjundajate kataloog
-var SHADER_PATH = "shaders/lesson04/";
+var SHADER_PATH = "shaders/lesson05/";
+
+//Tekstuuri asukoht
+var TEXTURE_PATH = "assets/texture.jpg";
 
 //Element, kuhu renderdame
 var canvas = document.getElementById("canvas");
@@ -47,7 +50,7 @@ function initWebGL(canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////// LESSON04 - LIIKUMINE //////////////////////////////////////////
+//////////////////////////////////////////////////////// LESSON05 - TEKSTUUR////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 var APP = {};
 
@@ -55,9 +58,29 @@ APP.looper = new Looper(canvas, loop);
 
 //Kutsutakse kui varjundajad on laetud
 function shadersLoaded() {
+    setupAndLoadTexture();
     setup();
 
     APP.looper.loop();
+}
+
+//Tekstuuri initsialiseerimine ja laadimine
+function setupAndLoadTexture() {
+
+    APP.texture = GL.createTexture();
+    var image = new Image();
+
+    image.onload = function() {
+        GL.bindTexture(GL.TEXTURE_2D, APP.texture);
+        GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGB, GL.RGB,  GL.UNSIGNED_BYTE, image);
+        GL.texParameterf(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.REPEAT);
+        GL.texParameterf(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.REPEAT);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+        GL.bindTexture(GL.TEXTURE_2D, null);
+    };
+    image.src = TEXTURE_PATH;
+
 }
 
 //Loob puhvrid ja maatriksid. Täidab puhvrid andmetega.
@@ -92,13 +115,14 @@ function setup() {
 
 
 
-    //Tippude andmed
+    //Tippude andmed. Tipu koordinaadid x, y, z ja tekstuuri koordinaadid u, v
     APP.myVerticesData = [
-        -1.0, -1.0,  0.0,
-        1.0, -1.0,  0.0,
-        1.0,  1.0,  0.0,
-        -1.0,  1.0,  0.0
+        -1.0, -1.0,  0.0,  0.0, 1.0,            //ALUMINE VASAK NURK
+         1.0, -1.0,  0.0,  1.0, 1.0,            //ALUMINE PAREM NURK
+         1.0,  1.0,  0.0,  1.0, 0.0,            //ÜLEMINE PAREM NURK
+        -1.0,  1.0,  0.0,  0.0, 0.0             //ÜLEMINE VASAK NURK
     ];
+    APP.vertexSize = 5;
 
     //Loome puhvri, kuhu tipuandmed viia. Seome ka antud puhvri kontekstiga, et temale käske edasi anda
     APP.vertexBuffer = GL.createBuffer();
@@ -122,21 +146,6 @@ function setup() {
     //Anname loodud puhvrile andmed
     GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, new Uint16Array(APP.myIndicesData), GL.STATIC_DRAW);
 
-    //Tippude värvid
-    APP.myVerticesColor = [
-        1.0,  0.0,  0.0,   // Tipp 1 punane
-        0.0,  1.0,  0.0,   // Tipp 2 roheline
-        0.0,  0.0,  1.0,   // Tipp 3 sinine
-        1.0,  1.0,  0.0    //Tipp 4 kollane
-    ];
-
-    //Loome puhvri ja seome kontekstiga
-    APP.colorBuffer = GL.createBuffer();
-    GL.bindBuffer(GL.ARRAY_BUFFER, APP.colorBuffer);
-
-    //Anname kontekstiga seotud puhvrile andmed
-    GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(APP.myVerticesColor), GL.STATIC_DRAW);
-
     //Määrame programmi, mida me renderdamisel kasutada tahame
     GL.useProgram(shaderProgram);
 
@@ -145,12 +154,13 @@ function setup() {
     APP.a_Position = GL.getAttribLocation(shaderProgram, "a_Position");
 
     //Saame värviatribuudi asukoha
-    APP.a_Color = GL.getAttribLocation(shaderProgram, "a_Color");
+    APP.a_TextureCoord = GL.getAttribLocation(shaderProgram, "a_TextureCoord");
 
     //Saame ühtsete muutujate asukohad
     APP.u_ModelMatrix = GL.getUniformLocation(shaderProgram, "u_ModelMatrix");
     APP.u_ViewMatrix = GL.getUniformLocation(shaderProgram, "u_ViewMatrix");
     APP.u_ProjectionMatrix = GL.getUniformLocation(shaderProgram, "u_ProjectionMatrix");
+    APP.u_Texture = GL.getUniformLocation(shaderProgram, "u_Texture");
 }
 
 //Kutsutakse välja Looper objektis iga kaader
@@ -164,14 +174,14 @@ function loop(deltaTime) {
 function update(deltaTime) {
     APP.time += deltaTime / 100;
 
-    updateCamera();
-    updateObject();
+   updateCamera();
+   //updateObject();
 }
 
 //Uuendab kaamerat, et seda oleks võimalik ümber objekti pöörata
 function updateCamera() {
-    var radius = 10;
-    var cameraHeight = 5;
+    var radius = 5;
+    var cameraHeight = 0;
 
     //Leiame uue positsiooni, mis ajas liigub polaarses koordinaatsüsteemis ja mille teisendame ristkoordinaatsüsteemi
     APP.cameraAt = [APP.objectAt[0] + radius * Math.cos(APP.time),       // X
@@ -201,7 +211,7 @@ function updateObject() {
 //Renderdamine
 function render() {
 
-    //Seekord enne renderdamist puhastame ka värvi- ja sügavuspuhvrid, ning määrame uue puhastuvärvuse.
+    //Ppuhastame ka värvi- ja sügavuspuhvrid, ning määrame uue puhastuvärvuse.
     //Hetkel puhastamine midagi ei tee, sest me renderdame vaid ühe korra, kuid kui me tsükklis seda tegema
     //on näha ka, mida nad teevad.
     GL.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -209,15 +219,17 @@ function render() {
 
     //Seome tipupuhvri ja määrame, kus antud tipuatribuut asub antud massiivis.
     GL.bindBuffer(GL.ARRAY_BUFFER, APP.vertexBuffer);
-    GL.vertexAttribPointer(APP.a_Position, 3, GL.FLOAT, false, 0, 0);
-
-    //Seome värvipuhvri ja määrame, kus antud atribuut asub antud massiivis.
-    GL.bindBuffer(GL.ARRAY_BUFFER, APP.colorBuffer);
-    GL.vertexAttribPointer(APP.a_Color, 3, GL.FLOAT, false, 0, 0);
+    GL.vertexAttribPointer(APP.a_Position, 3, GL.FLOAT, false, APP.vertexSize * 4, 0);
+    GL.vertexAttribPointer(APP.a_TextureCoord, 2, GL.FLOAT, false, APP.vertexSize * 4, APP.vertexSize * 4 - 2 * 4);
 
     //Aktiveerime atribuudid
     GL.enableVertexAttribArray(APP.a_Position);
-    GL.enableVertexAttribArray(APP.a_Color);
+    GL.enableVertexAttribArray(APP.a_TextureCoord);
+
+    //Aktiveerime ja määrame tekstuuri
+    GL.activeTexture(GL.TEXTURE0);
+    GL.bindTexture(GL.TEXTURE_2D, APP.texture);
+    GL.uniform1i(APP.u_Texture, 0);
 
     //Saadame meie maatriksid ka varjundajasse
     GL.uniformMatrix4fv(APP.u_ModelMatrix, false, APP.modelMatrix);
