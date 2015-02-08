@@ -10,7 +10,7 @@ var Looper = require("./../utils/looper");
 var SHADER_PATH = "shaders/lesson05/";
 
 //Tekstuuri asukoht
-var TEXTURE_PATH = "assets/texture.jpg";
+var TEXTURE_PATH = "assets/download.jpg";
 
 //Element, kuhu renderdame
 var canvas = document.getElementById("canvas");
@@ -117,10 +117,41 @@ function setup() {
 
     //Tippude andmed. Tipu koordinaadid x, y, z ja tekstuuri koordinaadid u, v
     APP.myVerticesData = [
-        -1.0, -1.0,  0.0,  0.0, 1.0,            //ALUMINE VASAK NURK
-         1.0, -1.0,  0.0,  1.0, 1.0,            //ALUMINE PAREM NURK
-         1.0,  1.0,  0.0,  1.0, 0.0,            //ÜLEMINE PAREM NURK
-        -1.0,  1.0,  0.0,  0.0, 0.0             //ÜLEMINE VASAK NURK
+        //Esimene külg
+        -1.0, -1.0,  1.0,  0.0, 1.0,            //ALUMINE VASAK NURK
+         1.0, -1.0,  1.0,  1.0, 1.0,            //ALUMINE PAREM NURK
+         1.0,  1.0,  1.0,  1.0, 0.0,            //ÜLEMINE PAREM NURK
+        -1.0,  1.0,  1.0,  0.0, 0.0,            //ÜLEMINE VASAK NURK
+
+        //Tagumine külg
+        -1.0, -1.0, -1.0,  0.0, 1.0,
+        -1.0,  1.0, -1.0,  1.0, 1.0,
+        1.0,  1.0, -1.0,   1.0, 0.0,
+        1.0, -1.0, -1.0,   0.0, 0.0,
+
+        //Ülemine külg
+        -1.0,  1.0, -1.0,  0.0, 1.0,
+        -1.0,  1.0,  1.0,  1.0, 1.0,
+        1.0,  1.0,  1.0,    1.0, 0.0,
+        1.0,  1.0, -1.0,  0.0, 0.0,
+
+        //Alumine külg
+        -1.0, -1.0, -1.0, 0.0, 1.0,
+        1.0, -1.0, -1.0, 1.0, 1.0,
+        1.0, -1.0,  1.0,  1.0, 0.0,
+        -1.0, -1.0,  1.0, 0.0, 0.0,
+
+        //Parem külg
+        1.0, -1.0, -1.0, 0.0, 1.0,
+        1.0,  1.0, -1.0, 1.0, 1.0,
+        1.0,  1.0,  1.0,  1.0, 0.0,
+        1.0, -1.0,  1.0, 0.0, 0.0,
+
+        //Vasak külg
+        -1.0, -1.0, -1.0, 0.0, 1.0,
+        -1.0, -1.0,  1.0, 1.0, 1.0,
+        -1.0,  1.0,  1.0,  1.0, 0.0,
+        -1.0,  1.0, -1.0, 0.0, 0.0,
     ];
     APP.vertexSize = 5;
 
@@ -134,13 +165,17 @@ function setup() {
 
     //Tippude indeksid
     APP.myIndicesData = [
-        0,  1,  2,
-        0,  2,  3
+        0, 1, 2,      0, 2, 3,    // Esimene külg
+        4, 5, 6,      4, 6, 7,    // Tagumine külg
+        8, 9, 10,     8, 10, 11,  // Ülemine külg
+        12, 13, 14,   12, 14, 15, // Alumine külg
+        16, 17, 18,   16, 18, 19, // Parem külg
+        20, 21, 22,   20, 22, 23  // Vasak külg
     ];
 
     //Loome puhvri, kuhu indeksid viia. Seome ka antud puhvri kontekstiga, et temale käske edasi anda
     APP.indexBuffer = GL.createBuffer();
-    APP.indexBuffer.numberOfIndexes = 6;
+    APP.indexBuffer.numberOfIndexes = 36;
     GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, APP.indexBuffer);
 
     //Anname loodud puhvrile andmed
@@ -175,7 +210,7 @@ function update(deltaTime) {
     APP.time += deltaTime / 100;
 
    updateCamera();
-   //updateObject();
+   updateObject();
 }
 
 //Uuendab kaamerat, et seda oleks võimalik ümber objekti pöörata
@@ -214,8 +249,12 @@ function render() {
     //Ppuhastame ka värvi- ja sügavuspuhvrid, ning määrame uue puhastuvärvuse.
     //Hetkel puhastamine midagi ei tee, sest me renderdame vaid ühe korra, kuid kui me tsükklis seda tegema
     //on näha ka, mida nad teevad.
-    GL.clearColor(0.0, 0.0, 0.0, 1.0);
+    GL.clearColor(0.5, 0.5, 0.5, 1.0);
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+    //Lülitame sisse sügavustesti
+    GL.enable(GL.DEPTH_TEST);
+    GL.depthFunc(GL.LESS);
 
     //Seome tipupuhvri ja määrame, kus antud tipuatribuut asub antud massiivis.
     GL.bindBuffer(GL.ARRAY_BUFFER, APP.vertexBuffer);
