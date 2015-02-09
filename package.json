@@ -11,16 +11,18 @@
     "lesson04": "npm run watch-server | npm run watch04",
     "lesson05": "npm run watch-server | npm run watch05",
     "lesson06": "npm run watch-server | npm run watch06",
+    "lesson07": "npm run watch-server | npm run watch07",
 
     "watch-server": "nodemon --ignore public/ server.js",
 
-    "watch00": "watchify lessons/lesson00/main.js -do public/js/bundle.js -v",
-    "watch01": "watchify lessons/lesson01/main.js -do public/js/bundle.js -v",
-    "watch02": "watchify lessons/lesson02/main.js -do public/js/bundle.js -v",
-    "watch03": "watchify lessons/lesson03/main.js -do public/js/bundle.js -v",
-    "watch04": "watchify lessons/lesson04/main.js -do public/js/bundle.js -v",
-    "watch05": "watchify lessons/lesson05/main.js -do public/js/bundle.js -v",
-    "watch06": "watchify lessons/lesson06/main.js -do public/js/bundle.js -v"
+    "watch00": "watchify lessons/lesson00/main.js -o public/js/bundle.js -dv",
+    "watch01": "watchify lessons/lesson01/main.js -o public/js/bundle.js -dv",
+    "watch02": "watchify lessons/lesson02/main.js -o public/js/bundle.js -dv",
+    "watch03": "watchify lessons/lesson03/main.js -o public/js/bundle.js -dv",
+    "watch04": "watchify lessons/lesson04/main.js -o public/js/bundle.js -dv",
+    "watch05": "watchify lessons/lesson05/main.js -o public/js/bundle.js -dv",
+    "watch06": "watchify lessons/lesson06/main.js -o public/js/bundle.js -dv",
+    "watch07": "watchify lessons/lesson07/main.js -o public/js/bundle.js -dv"
   },
   "repository": {
     "type": "git",
