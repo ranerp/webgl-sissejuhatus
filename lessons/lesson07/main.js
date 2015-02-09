@@ -50,8 +50,18 @@ function initWebGL(canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////// LESSON06 - HIIR ...////////////////////////////////////////////
+//////////////////////////////////////////////////////// LESSON07 - RENDERDAMINE TEKSTUURILE /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Küsime veebilehitsejalt sügavustekstuuri laiendust
+var extDepth = GL.getExtension("WEBGL_depth_texture") ||
+               GL.getExtension("WEBGKIT_WEBGL_depth_texture")||
+               GL.getExtension("MOZ_WEBGL_depth_texture");
+if(!extDepth) {
+    alert("Browser does not support depth texture extension. See webglreport.com for more information.");
+    throw error("No depth texture extension");
+}
+
 var APP = {};
 
 APP.looper = new Looper(canvas, loop);
@@ -84,6 +94,7 @@ APP.ZOOM_VALUE = 0.5;
 //Kutsutakse kui varjundajad on laetud
 function shadersLoaded() {
     setupAndLoadTexture();
+    setupFrameBuffer();
     setup();
 
     APP.looper.loop();
@@ -112,6 +123,37 @@ function setupAndLoadTexture() {
 
 }
 
+//Valmistabe ette kaadripuhvri, kuhu stseen renderdada
+function setupFrameBuffer() {
+
+    //Loome kaadripuhvri, kuhu saame renderdamise järjekorras stseeni renderdada.
+    APP.frameBuffer = GL.createFramebuffer();
+    GL.bindFramebuffer(GL.FRAMEBUFFER, APP.frameBuffer);
+    APP.frameBuffer.width = 512;
+    APP.frameBuffer.height = 512;
+
+    //Loome värvuspuhvri, mis hoiab piksleid
+    APP.FBColorTexture = GL.createTexture();
+    GL.bindTexture(GL.TEXTURE_2D, APP.FBColorTexture);
+    GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, APP.frameBuffer.width, APP.frameBuffer.height, 0, GL.RGBA, GL.UNSIGNED_BYTE, null);
+    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_NEAREST);
+    GL.generateMipmap(GL.TEXTURE_2D);
+
+    //Loome sügavuspuhvri, mis hoiab pikslite sügavusi
+    APP.FBDepthBuffer = GL.createRenderbuffer();
+    GL.bindRenderbuffer(GL.RENDERBUFFER, APP.FBDepthBuffer);
+    GL.renderbufferStorage(GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, APP.frameBuffer.width, APP.frameBuffer.height);
+
+    //Seome värvi- ja sügavuspuhvri antud kaadripuhvriga
+    GL.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, APP.FBColorTexture, 0);
+    GL.framebufferRenderbuffer(GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, APP.FBDepthBuffer);
+
+    GL.bindTexture(GL.TEXTURE_2D, null);
+    GL.bindRenderbuffer(GL.RENDERBUFFER, null);
+    GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+}
+
 //Loob puhvrid ja maatriksid. Täidab puhvrid andmetega.
 function setup() {
     //Teeme muutuja, kuhu salvestada aega, et kaamerat aja möödudes ümber objekti pöörata
@@ -124,17 +166,25 @@ function setup() {
     //Mudelmaatriks, millega objektiruumist maailmaruumi saada
     APP.modelMatrix = mat4.create();
 
+    //Mudelmaatriks, mida kasutame tekstuurile renderdamiseks
+    APP.textureModelMatrix = mat4.create();
+
     //Punkt, kus objekt hetkel asub
     APP.objectAt = [0.0, 0.0, -5.0];
 
     //Kasutades translatsiooni, saame mudelmaatriksiga objekti liigutada
     mat4.translate(APP.modelMatrix, APP.modelMatrix, APP.objectAt);
+    mat4.translate(APP.textureModelMatrix, APP.textureModelMatrix, APP.objectAt);
 
     //Kaameramaatriks, millega maailmaruumist kaameraruumi saada
     APP.viewMatrix = mat4.create();
 
+    //Kaameramaatriks, mida kasutame tekstuurile renderdamiseks
+    APP.textureViewMatrix = mat4.create();
+    mat4.lookAt(APP.textureViewMatrix, [0, 0, 0], [0, 0, -5], [0, 1, 0]);
+
     //Defineerime vektorid, mille abil on võimalik kaameraruumi baasvektorid arvutada
-    APP.cameraAt = [0, 0, 5];            //Asub maailmaruumis nendel koordinaatidel
+    APP.cameraAt = vec3.create();            //Asub maailmaruumis nendel koordinaatidel
     APP.lookAt = vec3.create();             //Mis suunas kaamera vaatab. Paremakäe koordinaatsüsteemis on -z ekraani sisse
     APP.up = vec3.create();                  //Vektor, mis näitab, kus on kaamera ülesse suunda näitav vektor
     updateCamera();
@@ -143,8 +193,9 @@ function setup() {
     APP.projectionMatrix = mat4.create();
     mat4.perspective(APP.projectionMatrix, 45.0, GL.viewportWidth / GL.viewportHeight, 1.0, 1000.0);
 
-
-
+    //Projektsioonimaatriks, mida kasutame tekstuurile renderdamiseks
+    APP.textureProjectionMatrix = mat4.create();
+    mat4.perspective(APP.textureProjectionMatrix, 45.0, 1, 0.1, 100.0);
 
     //Tippude andmed. Tipu koordinaadid x, y, z ja tekstuuri koordinaadid u, v
     APP.myVerticesData = [
@@ -288,8 +339,6 @@ function mouseMove(e) {
 //Funktsioon, et viia horisontaalne ja vertikaalne nurk kanoonilisse vormi
 //Implementeeritud 3D Math Primer for Graphics and Game Development juhendi järgi
 function toCanonical() {
-    console.log("x: " + APP.cameraX);
-    console.log("y: " + APP.cameraY);
 
     //Kui oleme 0 koordinaatidel
     if(APP.radius == 0.0) {
@@ -352,6 +401,15 @@ function restrictCameraY() {
 function loop(deltaTime) {
     update(deltaTime);
 
+    //Määrame kaadripuhvriks meie enda loodud kaadripuhvri
+    GL.bindFramebuffer(GL.FRAMEBUFFER, APP.frameBuffer);
+
+    //Renderdame stseeni tekstuurile
+    renderToTexture();
+
+    //Seome lahti eelmise kaadripuhvri. Pärast seda on kasutusel tavaline puhver, mida kasutatakse canvas elemendi jaoks.
+    GL.bindFramebuffer(GL.FRAMEBUFFER, null);
+
     render();
 }
 
@@ -359,7 +417,7 @@ function loop(deltaTime) {
 function update(deltaTime) {
     APP.time += deltaTime / 100;
 
-   //updateObject();
+   updateObject();
 }
 
 //Uuendab kaamerat, et seda oleks võimalik ümber objekti pöörata
@@ -395,17 +453,13 @@ function updateCamera() {
 
 //uuendame objekti
 function updateObject() {
-    mat4.rotateX(APP.modelMatrix, APP.modelMatrix, 0.005);
+    mat4.rotateX(APP.textureModelMatrix, APP.textureModelMatrix, 0.005);
 }
 
-
-//Renderdamine
-function render() {
-
-    //Ppuhastame ka värvi- ja sügavuspuhvrid, ning määrame uue puhastuvärvuse.
-    //Hetkel puhastamine midagi ei tee, sest me renderdame vaid ühe korra, kuid kui me tsükklis seda tegema
-    //on näha ka, mida nad teevad.
-    GL.clearColor(0.0, 0.0, 0.0, 1.0);
+//Renderdame tekstuurile
+function renderToTexture() {
+    GL.viewport(0, 0, APP.frameBuffer.width, APP.frameBuffer.height);
+    GL.clearColor(1.0, 1.0, 1.0, 1.0);
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
     //Lülitame sisse sügavustesti
@@ -424,6 +478,50 @@ function render() {
     //Aktiveerime ja määrame tekstuuri
     GL.activeTexture(GL.TEXTURE0);
     GL.bindTexture(GL.TEXTURE_2D, APP.texture);
+    GL.uniform1i(APP.u_Texture, 0);
+
+    //Saadame meie tekstuuri maatriksid ka varjundajasse
+    GL.uniformMatrix4fv(APP.u_ModelMatrix, false, APP.textureModelMatrix);
+    GL.uniformMatrix4fv(APP.u_ViewMatrix, false, APP.textureViewMatrix);
+    GL.uniformMatrix4fv(APP.u_ProjectionMatrix, false, APP.textureProjectionMatrix);
+
+    //Renderdame kolmnurgad indeksite järgi
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, APP.indexBuffer);
+    GL.drawElements(GL.TRIANGLES, APP.indexBuffer.numberOfIndexes, GL.UNSIGNED_SHORT, 0);
+
+    GL.bindTexture(GL.TEXTURE_2D, APP.FBColorTexture);
+    GL.generateMipmap(GL.TEXTURE_2D);
+    GL.bindTexture(GL.TEXTURE_2D, null);
+
+}
+
+
+//Renderdamine
+function render() {
+
+    //Puhastame ka värvi- ja sügavuspuhvrid, ning määrame uue puhastuvärvuse.
+    //Hetkel puhastamine midagi ei tee, sest me renderdame vaid ühe korra, kuid kui me tsükklis seda tegema
+    //on näha ka, mida nad teevad.
+    GL.viewport(0, 0, canvas.width, canvas.height);
+    GL.clearColor(0.0, 0.0, 0.0, 1.0);
+    GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+    //Lülitame sisse sügavustesti
+    GL.enable(GL.DEPTH_TEST);
+    GL.depthFunc(GL.LESS);
+
+    //Seome tipupuhvri ja määrame, kus antud tipuatribuut asub antud massiivis.
+    GL.bindBuffer(GL.ARRAY_BUFFER, APP.vertexBuffer);
+    GL.vertexAttribPointer(APP.a_Position, 3, GL.FLOAT, false, APP.vertexSize * 4, 0);
+    GL.vertexAttribPointer(APP.a_TextureCoord, 2, GL.FLOAT, false, APP.vertexSize * 4, APP.vertexSize * 4 - 2 * 4);
+
+    //Aktiveerime atribuudid
+    GL.enableVertexAttribArray(APP.a_Position);
+    GL.enableVertexAttribArray(APP.a_TextureCoord);
+
+    //Aktiveerime ja määrame tekstuuri
+    GL.activeTexture(GL.TEXTURE0);
+    GL.bindTexture(GL.TEXTURE_2D, APP.FBColorTexture);
     GL.uniform1i(APP.u_Texture, 0);
 
     //Saadame meie maatriksid ka varjundajasse
