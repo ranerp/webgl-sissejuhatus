@@ -10,7 +10,7 @@ var Looper = require("./../utils/looper");
 var SHADER_PATH = "shaders/lesson05/";
 
 //Tekstuuri asukoht
-var TEXTURE_PATH = "assets/download.jpg";
+var TEXTURE_PATH = "assets/texture.jpg";
 
 //Element, kuhu renderdame
 var canvas = document.getElementById("canvas");
@@ -261,6 +261,7 @@ function mouseScrollHandler(e) {
     updateCamera();
 }
 
+//Hiire allhoidmisel ja liigutamisel käivitub antud funktsioon
 function mouseMove(e) {
     var x = e.webkitMovementX || e.mozMovementX;
     var y = e.webkitMovementY || e.mozMovementY;
@@ -280,7 +281,7 @@ function mouseMove(e) {
     updateCamera();
 }
 
-//Funktsioon, et viia horisontaalne ja vertikaalne nurk kanoonilisse vormi.
+//Funktsioon, et viia horisontaalne ja vertikaalne nurk kanoonilisse vormi
 //Implementeeritud 3D Math Primer for Graphics and Game Development juhendi järgi
 function toCanonical() {
     console.log("x: " + APP.cameraX);
@@ -400,7 +401,7 @@ function render() {
     //Ppuhastame ka värvi- ja sügavuspuhvrid, ning määrame uue puhastuvärvuse.
     //Hetkel puhastamine midagi ei tee, sest me renderdame vaid ühe korra, kuid kui me tsükklis seda tegema
     //on näha ka, mida nad teevad.
-    GL.clearColor(0.5, 0.5, 0.5, 1.0);
+    GL.clearColor(0.0, 0.0, 0.0, 1.0);
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
     //Lülitame sisse sügavustesti
