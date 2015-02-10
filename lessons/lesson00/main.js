@@ -20,7 +20,7 @@ GL.viewport(0, 0, canvas.width, canvas.height);
 //Loome uue programmi spetsifitseeritud varjundajatega. Kuna laadimine on asünkroonne, siis anname kaasa ka
 //meetodi, mis kutsutakse välja kui varjundajad on laetud
 var shaderProgramLoader = new ShaderProgramLoader();
-var shaderProgram = shaderProgramLoader.getProgram(SHADER_PATH + "vertex.shader", SHADER_PATH + "fragment.shader", render);
+var shaderProgram = shaderProgramLoader.getProgram(SHADER_PATH + "vertex.shader",  SHADER_PATH + "fragment.shader", render);
 
 
 //Üritame luua WebGL konteksti
@@ -51,7 +51,7 @@ function render() {
     //Tippude andmed, mis moodustavad ühe kolmnurga
     var myVerticesData = [
         0.0,   1.0,  0.0,   // Tipp 1
-       -1.0,  -1.0,  0.0,   // Tipp 2
+        -1.0,  -1.0,  0.0,   // Tipp 2
         1.0,  -1.0,  0.0    // Tipp 3
     ];
 
@@ -75,8 +75,7 @@ function render() {
     //Aktiveerime eelpool küsitud atribuudi
     GL.enableVertexAttribArray(a_Position);
 
-
     //Renderdame Kolmnurgad
-    GL.drawArrays(GL.TRIANGLES, 0, 3);
+    GL.drawArrays(GL.TRIANGLES, 0, 6);
 }
 

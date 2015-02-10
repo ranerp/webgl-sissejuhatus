@@ -116,7 +116,7 @@ ShaderProgramLoader.prototype = {
     },
 
     /**
-     * Laeb asünkroonselt
+     * Laeb asünkroonselt lähtekoodi
      *
      * @param {String} shaderPath Tee, kus asub varjundaja
      * @param {function} callback Funktsioon, mis käivitatakse, kui lähtekood on kätte saadud. Saadetakse vastus ja tee.
