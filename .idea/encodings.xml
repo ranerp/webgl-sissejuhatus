@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false">
-    <file url="file://$PROJECT_DIR$/builds/lesson00/texture.jpg" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/builds/lesson01/texture.jpg" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/builds/lesson02/texture.jpg" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/builds/lesson03/texture.jpg" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/builds/lesson04/texture.jpg" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/builds/lesson05/texture.jpg" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/builds/lesson06/texture.jpg" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/builds/lesson07/texture.jpg" charset="UTF-8" />
