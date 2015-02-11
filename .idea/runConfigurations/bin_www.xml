@@ -3,7 +3,7 @@
     <envs>
       <env name="DEBUG" value="untitled" />
     </envs>
-    <browser url="http://localhost:3000/" />
+    <browser with-js-debugger="true" url="http://app.dev:9000/" />
     <RunnerSettings RunnerId="NodeJS.run" />
     <ConfigurationWrapper RunnerId="NodeJS.run" />
     <method />
