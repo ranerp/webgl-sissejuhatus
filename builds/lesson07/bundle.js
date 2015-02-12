@@ -444,6 +444,8 @@ function updateCamera() {
         Math.cos(APP.cameraX - Math.PI / 2)
     ];
 
+    vec3.normalize(APP.right, APP.right);
+    vec3.normalize(APP.lookDirection, APP.lookDirection);
     vec3.cross(APP.up, APP.right, APP.lookDirection);
 
     //Uuendame kaameramaatriksit

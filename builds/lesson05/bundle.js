@@ -11,7 +11,7 @@ var Looper = require("./../utils/looper");
 var SHADER_PATH = "shaders/lesson05/";
 
 //Tekstuuri asukoht
-var TEXTURE_PATH = "assets/download.jpg";
+var TEXTURE_PATH = "assets/texture.jpg";
 
 //Element, kuhu renderdame
 var canvas = document.getElementById("canvas");
