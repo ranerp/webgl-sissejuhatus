@@ -437,7 +437,7 @@ function updateCamera() {
     //Leiame punkti, mida kaamera vaatab
     vec3.add(APP.lookAt, APP.cameraAt, APP.lookDirection);
 
-    APP.right = [
+    APP.up = [
         Math.sin(APP.cameraX - Math.PI / 2),
         0,
         Math.cos(APP.cameraX - Math.PI / 2)

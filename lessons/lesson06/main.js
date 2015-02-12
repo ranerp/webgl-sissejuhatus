@@ -246,9 +246,8 @@ function mouseScrollHandler(e) {
 
     if(e.wheelDelta)                    /** Internet Explorer/Opera/Google Chrome **/
         delta = e.wheelDelta / 120;
-
     else if(e.detail)                   /** Mozilla Firefox **/
-        delta = -e.detail/3;
+        delta = -e.detail / 3;
 
     if(delta) {
         if(delta > 0 && APP.radius > APP.MIN_RADIUS)
@@ -276,8 +275,8 @@ function mouseMove(e) {
         y = 0;
 
 
-    APP.cameraX += x / 500;
-    APP.cameraY += y / 500;
+    APP.cameraX += x * 0.002;
+    APP.cameraY += y * 0.002;
 
     restrictCameraY();
     toCanonical();
@@ -288,8 +287,6 @@ function mouseMove(e) {
 //Funktsioon, et viia horisontaalne ja vertikaalne nurk kanoonilisse vormi
 //Implementeeritud 3D Math Primer for Graphics and Game Development juhendi järgi
 function toCanonical() {
-    console.log("x: " + APP.cameraX);
-    console.log("y: " + APP.cameraY);
 
     //Kui oleme 0 koordinaatidel
     if(APP.radius == 0.0) {
@@ -357,12 +354,11 @@ function loop(deltaTime) {
 
 //Uuendab andmeid, et oleks võimalik stseen liikuma panna
 function update(deltaTime) {
-    APP.time += deltaTime / 100;
+    APP.time += deltaTime * 0.01;
 
-   //updateObject();
 }
 
-//Uuendab kaamerat, et seda oleks võimalik ümber objekti pöörata
+//Uuendab kaamerat, et seda oleks võimalik ümber objekti pöörata.
 function updateCamera() {
 
     //Leiame uue positsiooni, mis ajas liigub polaarses koordinaatsüsteemis ja mille teisendame ristkoordinaatsüsteemi
@@ -380,24 +376,24 @@ function updateCamera() {
     vec3.add(APP.lookAt, APP.cameraAt, APP.lookDirection);
 
     APP.right = [
-        Math.sin(APP.cameraX - Math.PI / 2),
+        Math.sin(APP.cameraX - 3.14 / 2),
         0,
-        Math.cos(APP.cameraX - Math.PI / 2)
+        Math.cos(APP.cameraX - 3.14 / 2)
     ];
 
-    vec3.cross(APP.up, APP.right, APP.lookDirection);
+    vec3.normalize(APP.right, APP.right);
+    vec3.normalize(APP.lookDirection, APP.lookDirection);
+    vec3.cross(APP.up, APP.lookDirection, APP.right);
+
 
     //Uuendame kaameramaatriksit
     mat4.lookAt(APP.viewMatrix, APP.cameraAt, APP.lookAt, APP.up);
 
+    var z = vec3.dot(APP.lookDirection, APP.up);
+    var x = vec3.dot(APP.right, APP.up);
+    var c = vec3.dot(APP.right, APP.lookDirection);
 
 }
-
-//uuendame objekti
-function updateObject() {
-    mat4.rotateX(APP.modelMatrix, APP.modelMatrix, 0.005);
-}
-
 
 //Renderdamine
 function render() {
