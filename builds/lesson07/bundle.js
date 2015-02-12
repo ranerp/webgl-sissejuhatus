@@ -27,7 +27,7 @@ GL.viewportHeight = canvas.height;
 //Loome uue programmi spetsifitseeritud varjundajatega. Kuna laadimine on asünkroonne, siis anname kaasa ka
 //meetodi, mis kutsutakse välja kui varjundajad on laetud
 var shaderProgramLoader = new ShaderProgramLoader();
-var shaderProgram = shaderProgramLoader.getProgram(SHADER_PATH + "vertex.shader", SHADER_PATH + "fragment.shader", shadersLoaded);
+var shaderProgram = shaderProgramLoader.getProgram("vertex.shader", "fragment.shader", shadersLoaded);
 
 
 //Üritame luua WebGL konteksti

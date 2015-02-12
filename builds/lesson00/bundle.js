@@ -6,9 +6,6 @@
 
 var ShaderProgramLoader = require("./../utils/shaderprogramloader");
 
-//Varjundajate kataloog
-var SHADER_PATH = "shaders/lesson00/";
-
 //Element, kuhu renderdame
 var canvas = document.getElementById("canvas");
 
@@ -21,7 +18,7 @@ GL.viewport(0, 0, canvas.width, canvas.height);
 //Loome uue programmi spetsifitseeritud varjundajatega. Kuna laadimine on asünkroonne, siis anname kaasa ka
 //meetodi, mis kutsutakse välja kui varjundajad on laetud
 var shaderProgramLoader = new ShaderProgramLoader();
-var shaderProgram = shaderProgramLoader.getProgram(SHADER_PATH + "vertex.shader",  SHADER_PATH + "fragment.shader", render);
+var shaderProgram = shaderProgramLoader.getProgram("vertex.shader", "fragment.shader", render);
 
 
 //Üritame luua WebGL konteksti
