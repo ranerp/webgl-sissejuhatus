@@ -7,10 +7,10 @@ var ShaderProgramLoader = require("./../utils/shaderprogramloader");
 var Looper = require("./../utils/looper");
 
 //Varjundajate kataloog
-var SHADER_PATH = "shaders/lesson07/";
+var SHADER_PATH = "shaders/lesson08/";
 
 //Tekstuuri asukoht
-var TEXTURE_PATH = "texture.jpg";
+var TEXTURE_PATH = "assets/texture.jpg";
 
 //Element, kuhu renderdame
 var canvas = document.getElementById("canvas");
@@ -26,7 +26,7 @@ GL.viewportHeight = canvas.height;
 //Loome uue programmi spetsifitseeritud varjundajatega. Kuna laadimine on asünkroonne, siis anname kaasa ka
 //meetodi, mis kutsutakse välja kui varjundajad on laetud
 var shaderProgramLoader = new ShaderProgramLoader();
-var shaderProgram = shaderProgramLoader.getProgram("vertex.shader", "fragment.shader", shadersLoaded);
+var shaderProgram = shaderProgramLoader.getProgram(SHADER_PATH + "vertex.shader", SHADER_PATH + "fragment.shader", shadersLoaded);
 
 
 //Üritame luua WebGL konteksti
@@ -86,10 +86,10 @@ APP.PIOVERTWO = Math.PI / 2.0;
 APP.MAX_VERTICAL = APP.PIOVERTWO - APP.PIOVERTWO / 8;
 
 //Raadius, millest lähemale kaamera minna ei saa
-APP.MIN_RADIUS = 1;
+APP.MIN_RADIUS = 1.0;
 
 //Suumimiskonstant
-APP.ZOOM_VALUE = 0.5;
+APP.ZOOM_VALUE = 1.0;
 
 //Kutsutakse kui varjundajad on laetud
 function shadersLoaded() {
@@ -156,11 +156,29 @@ function setupFrameBuffer() {
 
 //Loob puhvrid ja maatriksid. Täidab puhvrid andmetega.
 function setup() {
+    //Valgusallikas
+    APP.directionalLight = {
+        "color": new Float32Array([1.0, 1.0, 1.0]),
+        "direction": new Float32Array([-1.0, -1.0, 1.0])
+    };
+
+    APP.textureDirectionalLight = {
+        "color": new Float32Array([1.0, 1.0, 0.0]),
+        "direction": new Float32Array([1.0, 0.0, 0.0])
+    };
+
+    APP.material = {
+        "ambientColor": new Float32Array([0.3, 0.3, 0.3]),
+        "diffuseColor": new Float32Array([0.5, 0.5, 0.5]),
+        "specularColor": new Float32Array([0.7, 0.7, 0.7]),
+        "shininess": 128.0
+    };
+
     //Teeme muutuja, kuhu salvestada aega, et kaamerat aja möödudes ümber objekti pöörata
     APP.time = 0;
 
-    APP.cameraX = 0;
-    APP.cameraY = 0;
+    APP.cameraX = -0.7;
+    APP.cameraY = -0.7;
     APP.radius = 5;
 
     //Mudelmaatriks, millega objektiruumist maailmaruumi saada
@@ -174,7 +192,7 @@ function setup() {
 
     //Kasutades translatsiooni, saame mudelmaatriksiga objekti liigutada
     mat4.translate(APP.modelMatrix, APP.modelMatrix, APP.objectAt);
-    mat4.translate(APP.textureModelMatrix, APP.textureModelMatrix, APP.objectAt);
+    mat4.translate(APP.textureModelMatrix, APP.textureModelMatrix, [0.0, 0.0, -4.0]);
 
     //Kaameramaatriks, millega maailmaruumist kaameraruumi saada
     APP.viewMatrix = mat4.create();
@@ -197,45 +215,45 @@ function setup() {
     APP.textureProjectionMatrix = mat4.create();
     mat4.perspective(APP.textureProjectionMatrix, 45.0, 1, 0.1, 100.0);
 
-    //Tippude andmed. Tipu koordinaadid x, y, z ja tekstuuri koordinaadid u, v
+    //Tippude andmed. Tipu koordinaadid x, y, z, Normaalvektori koordinaaid x, y, z ja tekstuuri koordinaadid u, v
     APP.myVerticesData = [
         //Esimene külg
-        -1.0, -1.0,  1.0,  0.0, 1.0,            //ALUMINE VASAK NURK
-         1.0, -1.0,  1.0,  1.0, 1.0,            //ALUMINE PAREM NURK
-         1.0,  1.0,  1.0,  1.0, 0.0,            //ÜLEMINE PAREM NURK
-        -1.0,  1.0,  1.0,  0.0, 0.0,            //ÜLEMINE VASAK NURK
+        -1.0, -1.0,  1.0, 0.0, 0.0, 1.0,  0.0, 1.0,            //ALUMINE VASAK NURK
+         1.0, -1.0,  1.0, 0.0, 0.0, 1.0,  1.0, 1.0,            //ALUMINE PAREM NURK
+         1.0,  1.0,  1.0, 0.0, 0.0, 1.0,  1.0, 0.0,            //ÜLEMINE PAREM NURK
+        -1.0,  1.0,  1.0, 0.0, 0.0, 1.0,  0.0, 0.0,            //ÜLEMINE VASAK NURK
 
         //Tagumine külg
-        -1.0, -1.0, -1.0,  0.0, 1.0,
-        -1.0,  1.0, -1.0,  1.0, 1.0,
-        1.0,  1.0, -1.0,   1.0, 0.0,
-        1.0, -1.0, -1.0,   0.0, 0.0,
+        -1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0,
+        -1.0,  1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0,
+        1.0,  1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 0.0,
+        1.0, -1.0, -1.0, 0.0, 0.0, -1.0, 0.0, 0.0,
 
         //Ülemine külg
-        -1.0,  1.0, -1.0,  0.0, 1.0,
-        -1.0,  1.0,  1.0,  1.0, 1.0,
-        1.0,  1.0,  1.0,    1.0, 0.0,
-        1.0,  1.0, -1.0,  0.0, 0.0,
+        -1.0,  1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+        -1.0,  1.0,  1.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+        1.0,  1.0,  1.0, 0.0, 1.0, 0.0, 1.0, 0.0,
+        1.0,  1.0, -1.0, 0.0, 1.0, 0.0,  0.0, 0.0,
 
         //Alumine külg
-        -1.0, -1.0, -1.0, 0.0, 1.0,
-        1.0, -1.0, -1.0, 1.0, 1.0,
-        1.0, -1.0,  1.0,  1.0, 0.0,
-        -1.0, -1.0,  1.0, 0.0, 0.0,
+        -1.0, -1.0, -1.0, 0.0, -1.0, 0.0, 0.0, 1.0,
+        1.0, -1.0, -1.0, 0.0, -1.0, 0.0, 1.0, 1.0,
+        1.0, -1.0,  1.0, 0.0, -1.0, 0.0,  1.0, 0.0,
+        -1.0, -1.0,  1.0, 0.0, -1.0, 0.0, 0.0, 0.0,
 
         //Parem külg
-        1.0, -1.0, -1.0, 0.0, 1.0,
-        1.0,  1.0, -1.0, 1.0, 1.0,
-        1.0,  1.0,  1.0,  1.0, 0.0,
-        1.0, -1.0,  1.0, 0.0, 0.0,
+        1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 1.0,
+        1.0,  1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0,
+        1.0,  1.0,  1.0, 1.0, 0.0, 0.0,  1.0, 0.0,
+        1.0, -1.0,  1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
 
         //Vasak külg
-        -1.0, -1.0, -1.0, 0.0, 1.0,
-        -1.0, -1.0,  1.0, 1.0, 1.0,
-        -1.0,  1.0,  1.0,  1.0, 0.0,
-        -1.0,  1.0, -1.0, 0.0, 0.0,
+        -1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0,
+        -1.0, -1.0,  1.0, -1.0, 0.0, 0.0, 1.0, 1.0,
+        -1.0,  1.0,  1.0, -1.0, 0.0, 0.0,  1.0, 0.0,
+        -1.0,  1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0,
     ];
-    APP.vertexSize = 5;
+    APP.vertexSize = 8;
 
     //Loome puhvri, kuhu tipuandmed viia. Seome ka antud puhvri kontekstiga, et temale käske edasi anda
     APP.vertexBuffer = GL.createBuffer();
@@ -270,6 +288,9 @@ function setup() {
     //olev tipuatribuut nimega a_VertexPosition
     APP.a_Position = GL.getAttribLocation(shaderProgram, "a_Position");
 
+    //Saame tipu normaalvektori
+    APP.a_Normal = GL.getAttribLocation(shaderProgram, "a_Normal");
+
     //Saame värviatribuudi asukoha
     APP.a_TextureCoord = GL.getAttribLocation(shaderProgram, "a_TextureCoord");
 
@@ -278,6 +299,20 @@ function setup() {
     APP.u_ViewMatrix = GL.getUniformLocation(shaderProgram, "u_ViewMatrix");
     APP.u_ProjectionMatrix = GL.getUniformLocation(shaderProgram, "u_ProjectionMatrix");
     APP.u_Texture = GL.getUniformLocation(shaderProgram, "u_Texture");
+
+    //Valgusallika ühtsete muutujate asukohad
+    APP.u_DirectionalLight = {
+        "color": GL.getUniformLocation(shaderProgram, "u_DirectionalLightColor"),
+        "direction": GL.getUniformLocation(shaderProgram, "u_DirectionalLightDirection")
+    };
+
+    //Materiali ühtsete muutujate asukohad
+    APP.u_Material = {
+        "ambientColor": GL.getUniformLocation(shaderProgram, "u_MaterialAmbientColor"),
+        "diffuseColor": GL.getUniformLocation(shaderProgram, "u_MaterialDiffuseColor"),
+        "specularColor": GL.getUniformLocation(shaderProgram, "u_MaterialSpecularColor"),
+        "shininess": GL.getUniformLocation(shaderProgram, "u_MaterialShininess")
+    };
 }
 
 function mouseClickHandler() {
@@ -443,7 +478,9 @@ function updateCamera() {
         Math.cos(APP.cameraX - Math.PI / 2)
     ];
 
-    vec3.cross(APP.up, APP.right, APP.lookDirection);
+    vec3.normalize(APP.right, APP.right);
+    vec3.normalize(APP.lookDirection, APP.lookDirection);
+    vec3.cross(APP.up, APP.lookDirection, APP.right);
 
     //Uuendame kaameramaatriksit
     mat4.lookAt(APP.viewMatrix, APP.cameraAt, APP.lookAt, APP.up);
@@ -453,8 +490,19 @@ function updateCamera() {
 
 //uuendame objekti
 function updateObject() {
-    mat4.rotateX(APP.textureModelMatrix, APP.textureModelMatrix, 0.005);
+    mat4.rotateY(APP.textureModelMatrix, APP.textureModelMatrix, 0.005);
 }
+
+//Määrame valgusarvutuste jaoks ühtsed muutujad
+function setMaterialUniforms() {
+
+    //Objekti materjali muutujad
+    GL.uniform3fv(APP.u_Material.ambientColor, APP.material.ambientColor);
+    GL.uniform3fv(APP.u_Material.diffuseColor, APP.material.diffuseColor);
+    GL.uniform3fv(APP.u_Material.specularColor, APP.material.specularColor);
+    GL.uniform1f(APP.u_Material.shininess, APP.material.shininess);
+}
+
 
 //Renderdame tekstuurile
 function renderToTexture() {
@@ -469,16 +517,24 @@ function renderToTexture() {
     //Seome tipupuhvri ja määrame, kus antud tipuatribuut asub antud massiivis.
     GL.bindBuffer(GL.ARRAY_BUFFER, APP.vertexBuffer);
     GL.vertexAttribPointer(APP.a_Position, 3, GL.FLOAT, false, APP.vertexSize * 4, 0);
+    GL.vertexAttribPointer(APP.a_Normal, 3, GL.FLOAT, false, APP.vertexSize * 4, 3 * 4);
     GL.vertexAttribPointer(APP.a_TextureCoord, 2, GL.FLOAT, false, APP.vertexSize * 4, APP.vertexSize * 4 - 2 * 4);
 
     //Aktiveerime atribuudid
     GL.enableVertexAttribArray(APP.a_Position);
+    GL.enableVertexAttribArray(APP.a_Normal);
     GL.enableVertexAttribArray(APP.a_TextureCoord);
 
     //Aktiveerime ja määrame tekstuuri
     GL.activeTexture(GL.TEXTURE0);
     GL.bindTexture(GL.TEXTURE_2D, APP.texture);
     GL.uniform1i(APP.u_Texture, 0);
+
+    setMaterialUniforms();
+
+    //Valgusallika muutujad
+    GL.uniform3fv(APP.u_DirectionalLight.color, APP.textureDirectionalLight.color);
+    GL.uniform3fv(APP.u_DirectionalLight.direction, APP.textureDirectionalLight.direction);
 
     //Saadame meie tekstuuri maatriksid ka varjundajasse
     GL.uniformMatrix4fv(APP.u_ModelMatrix, false, APP.textureModelMatrix);
@@ -494,7 +550,6 @@ function renderToTexture() {
     GL.bindTexture(GL.TEXTURE_2D, null);
 
 }
-
 
 //Renderdamine
 function render() {
@@ -523,6 +578,12 @@ function render() {
     GL.activeTexture(GL.TEXTURE0);
     GL.bindTexture(GL.TEXTURE_2D, APP.FBColorTexture);
     GL.uniform1i(APP.u_Texture, 0);
+
+    setMaterialUniforms();
+
+    //Valgusallika muutujad
+    GL.uniform3fv(APP.u_DirectionalLight.color, APP.directionalLight.color);
+    GL.uniform3fv(APP.u_DirectionalLight.direction, APP.directionalLight.direction);
 
     //Saadame meie maatriksid ka varjundajasse
     GL.uniformMatrix4fv(APP.u_ModelMatrix, false, APP.modelMatrix);

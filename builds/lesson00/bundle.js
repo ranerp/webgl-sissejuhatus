@@ -74,7 +74,7 @@ function render() {
     GL.enableVertexAttribArray(a_Position);
 
     //Renderdame Kolmnurgad
-    GL.drawArrays(GL.TRIANGLES, 0, 6);
+    GL.drawArrays(GL.TRIANGLES, 0, 3);
 }
 
 

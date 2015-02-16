@@ -445,7 +445,7 @@ function updateCamera() {
 
     vec3.normalize(APP.right, APP.right);
     vec3.normalize(APP.lookDirection, APP.lookDirection);
-    vec3.cross(APP.up, APP.right, APP.lookDirection);
+    vec3.cross(APP.up, APP.lookDirection, APP.right);
 
     //Uuendame kaameramaatriksit
     mat4.lookAt(APP.viewMatrix, APP.cameraAt, APP.lookAt, APP.up);
