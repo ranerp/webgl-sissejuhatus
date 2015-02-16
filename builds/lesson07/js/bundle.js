@@ -8,10 +8,10 @@ var ShaderProgramLoader = require("./../utils/shaderprogramloader");
 var Looper = require("./../utils/looper");
 
 //Varjundajate kataloog
-var SHADER_PATH = "shaders/lesson07/";
+var SHADER_PATH = "shaders/";
 
 //Tekstuuri asukoht
-var TEXTURE_PATH = "texture.jpg";
+var TEXTURE_PATH = "assets/texture.jpg";
 
 //Element, kuhu renderdame
 var canvas = document.getElementById("canvas");
@@ -27,7 +27,7 @@ GL.viewportHeight = canvas.height;
 //Loome uue programmi spetsifitseeritud varjundajatega. Kuna laadimine on asünkroonne, siis anname kaasa ka
 //meetodi, mis kutsutakse välja kui varjundajad on laetud
 var shaderProgramLoader = new ShaderProgramLoader();
-var shaderProgram = shaderProgramLoader.getProgram("vertex.shader", "fragment.shader", shadersLoaded);
+var shaderProgram = shaderProgramLoader.getProgram(SHADER_PATH + "vertex.shader", SHADER_PATH + "fragment.shader", shadersLoaded);
 
 
 //Üritame luua WebGL konteksti
@@ -51,7 +51,7 @@ function initWebGL(canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////// LESSON08 - Valgus /////////////// /////////////////////////////
+//////////////////////////////////////////////////////// LESSON07 - RENDERDAMINE TEKSTUURILE /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Küsime veebilehitsejalt sügavustekstuuri laiendust
@@ -444,7 +444,9 @@ function updateCamera() {
         Math.cos(APP.cameraX - Math.PI / 2)
     ];
 
-    vec3.cross(APP.up, APP.right, APP.lookDirection);
+    vec3.normalize(APP.right, APP.right);
+    vec3.normalize(APP.lookDirection, APP.lookDirection);
+    vec3.cross(APP.up, APP.lookDirection, APP.right);
 
     //Uuendame kaameramaatriksit
     mat4.lookAt(APP.viewMatrix, APP.cameraAt, APP.lookAt, APP.up);

@@ -118,7 +118,7 @@ function render() {
 
     //Renderdame kolmnurgad indeksite järgi
     GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    GL.drawElements(GL.LINE_LOOP, indexBuffer.numberOfIndexes, GL.UNSIGNED_SHORT, 0);
+    GL.drawElements(GL.TRIANGLES, indexBuffer.numberOfIndexes, GL.UNSIGNED_SHORT, 0);
 
 
 }
