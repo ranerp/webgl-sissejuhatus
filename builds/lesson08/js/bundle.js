@@ -8,7 +8,7 @@ var ShaderProgramLoader = require("./../utils/shaderprogramloader");
 var Looper = require("./../utils/looper");
 
 //Varjundajate kataloog
-var SHADER_PATH = "shaders/";
+var SHADER_PATH = "shaders/lesson08/";
 
 //Tekstuuri asukoht
 var TEXTURE_PATH = "assets/texture.jpg";
@@ -51,7 +51,7 @@ function initWebGL(canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////// LESSON08 - Valgus /////////////// /////////////////////////////
+//////////////////////////////////////////////////////// LESSON08 - VALGUS /////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Küsime veebilehitsejalt sügavustekstuuri laiendust
@@ -157,17 +157,19 @@ function setupFrameBuffer() {
 
 //Loob puhvrid ja maatriksid. Täidab puhvrid andmetega.
 function setup() {
-    //Valgusallikas
+    //Valgusallikas, mida kasutame stseeni renderdamisel
     APP.directionalLight = {
         "color": new Float32Array([1.0, 1.0, 1.0]),
         "direction": new Float32Array([-1.0, -1.0, 1.0])
     };
 
+    //Valgusallikas, mida kasutame tekstuuri renderdamisel
     APP.textureDirectionalLight = {
         "color": new Float32Array([1.0, 1.0, 0.0]),
         "direction": new Float32Array([1.0, 0.0, 0.0])
     };
 
+    //Materjal, mida kasutame mõlemas renderdamisetapis
     APP.material = {
         "ambientColor": new Float32Array([0.3, 0.3, 0.3]),
         "diffuseColor": new Float32Array([0.5, 0.5, 0.5]),
@@ -595,6 +597,11 @@ function render() {
     GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, APP.indexBuffer);
     GL.drawElements(GL.TRIANGLES, APP.indexBuffer.numberOfIndexes, GL.UNSIGNED_SHORT, 0);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////   LÕPP  /////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 },{"./../utils/looper":2,"./../utils/shaderprogramloader":3}],2:[function(require,module,exports){

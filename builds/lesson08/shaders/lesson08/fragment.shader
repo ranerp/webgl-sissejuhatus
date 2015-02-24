@@ -19,7 +19,7 @@ void main(void) {
 
   vec4 color = texture2D(u_Texture, vec2(v_TextureCoord.s, v_TextureCoord.t));
 
-  //Leiame valguse suuna kaameraruumis, sest meil peavad kõik toimuma samas ruumis. Võimalik on teha seda ka
+  //Leiame valguse suuna kaameraruumis, sest meil peavad kõik toimuma samas ruumis.
   vec3 lightDirectionCameraSpace = (u_ViewMatrix * vec4(u_DirectionalLightDirection, 0.0)).xyz;
 
   //Suunavektor alati normaliseerida

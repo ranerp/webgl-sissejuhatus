@@ -26,16 +26,16 @@
     "watch07": "watchify lessons/lesson07/main.js -o public/js/bundle.js -dv",
     "watch08": "watchify lessons/lesson08/main.js -o public/js/bundle.js -dv",
 
-    "build-all": "npm run build00 | npm run build01 | npm run build02 | npm run build03 | npm run build04 | npm run build05 | npm run build06 | npm run build07 | npm run build08",
-    "build00": "browserify lessons/lesson00/main.js -o builds/lesson00/bundle.js",
-    "build01": "browserify lessons/lesson01/main.js -o builds/lesson01/bundle.js",
-    "build02": "browserify lessons/lesson02/main.js -o builds/lesson02/bundle.js",
-    "build03": "browserify lessons/lesson03/main.js -o builds/lesson03/bundle.js",
-    "build04": "browserify lessons/lesson04/main.js -o builds/lesson04/bundle.js",
-    "build05": "browserify lessons/lesson05/main.js -o builds/lesson05/bundle.js",
-    "build06": "browserify lessons/lesson06/main.js -o builds/lesson06/bundle.js",
-    "build07": "browserify lessons/lesson07/main.js -o builds/lesson07/bundle.js",
-    "build08": "browserify lessons/lesson08/main.js -o builds/lesson08/bundle.js"
+    "build-all": "npm run build00 | npm run build01 | npm run build02 | npm run build03 | npm run build04 | npm run build05 | npm run build06 | npm run build07 | npm run build08 | npm run build09",
+    "build00": "browserify lessons/lesson00/main.js -o builds/lesson00/js/bundle.js",
+    "build01": "browserify lessons/lesson01/main.js -o builds/lesson01/js/bundle.js",
+    "build02": "browserify lessons/lesson02/main.js -o builds/lesson02/js/bundle.js",
+    "build03": "browserify lessons/lesson03/main.js -o builds/lesson03/js/bundle.js",
+    "build04": "browserify lessons/lesson04/main.js -o builds/lesson04/js/bundle.js",
+    "build05": "browserify lessons/lesson05/main.js -o builds/lesson05/js/bundle.js",
+    "build06": "browserify lessons/lesson06/main.js -o builds/lesson06/js/bundle.js",
+    "build07": "browserify lessons/lesson07/main.js -o builds/lesson07/js/bundle.js",
+    "build08": "browserify lessons/lesson08/main.js -o builds/lesson08/js/bundle.js"
   },
   "repository": {
     "type": "git",
